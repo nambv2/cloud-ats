@@ -70,6 +70,14 @@ public class KeywordProject extends AbstractEntity<KeywordProject> {
     setStatus(Status.READY);
   }
   
+  public void setType(String value) {
+    this.put("upload_project", value);
+  }
+  
+  public String getType() {
+    return this.getString("upload_project") != null ? this.getString("upload_project") : "false";
+  }
+  
   public String getId() {
     return this.getString("_id");
   }

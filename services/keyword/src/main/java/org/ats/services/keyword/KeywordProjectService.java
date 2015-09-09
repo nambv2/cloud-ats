@@ -84,7 +84,7 @@ public class KeywordProjectService extends AbstractMongoCRUD<KeywordProject>{
     project.put("active", source.get("active"));
     project.put("_id", source.get("_id"));
     project.setStatus(source.get("status") == null ? Status.READY : Status.valueOf((String) source.get("status")));
-    
+    project.setType(source.get("upload_project") == null ? "false" : source.get("upload_project").toString());
     //transform custom keywords
     if (source.get("custom_keywords") == null) return project;
     

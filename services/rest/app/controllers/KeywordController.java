@@ -3,6 +3,7 @@
  */
 package controllers;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,6 +34,7 @@ import org.ats.services.organization.entity.fatory.ReferenceFactory;
 
 import play.libs.Json;
 import play.mvc.Controller;
+import play.mvc.Http.MultipartFormData;
 import play.mvc.Result;
 import actions.CorsComposition;
 
@@ -85,6 +87,7 @@ public class KeywordController extends Controller {
         project.put("type", "keyword");
         project.put("totalSuites", suiteService.getSuites(project.getId()).count());
         project.put("totalCases", caseService.getCases(project.getId()).count());
+        project.put("upload_project", project.getType());
         
         BasicDBObject query = new BasicDBObject("project_id", project.getId()).append("status", AbstractJob.Status.Completed.toString());
         PageList<AbstractJob<?>> jobList = executorService.query(query, 1);
@@ -117,7 +120,7 @@ public class KeywordController extends Controller {
     project.put("type", "keyword");
     project.put("totalSuites", suiteService.getSuites(project.getId()).count());
     project.put("totalCases", caseService.getCases(project.getId()).count());
-    
+    project.put("upload_project", project.getType());
     PageList<AbstractJob<?>> jobList = executorService.query(new BasicDBObject("project_id", projectId), 1);
     jobList.setSortable(new MapBuilder<String, Boolean>("created_date", false).build());
     
@@ -135,8 +138,9 @@ public class KeywordController extends Controller {
   public Result create() {
     JsonNode json = request().body().asJson();
     String name = json.get("name").asText();
-    
+    String type = json.get("type").asText();
     KeywordProject project = keywordProjectFactory.create(context, name);
+    project.setType("new".equals(type) ? "false" : "true");
     keywordProjectService.create(project);
     return status(201, project.getId());
   }
@@ -255,6 +259,21 @@ public class KeywordController extends Controller {
     }
 
     return ok(array);
+  }
+  
+  public Result upload(String projectId) {
+    MultipartFormData body = request().body().asMultipartFormData();
+    MultipartFormData.FilePart typeFile = body.getFile("file");
+    if(typeFile != null) {
+      String fileName = typeFile.getFilename();
+      String contentType = typeFile.getContentType();
+      File file = typeFile.getFile();
+      System.out.println("****File upload: "+fileName);
+      return ok("File uploaded");
+    } else {
+      flash("Error","Missing file");
+      return badRequest();
+    }
   }
   
 }
