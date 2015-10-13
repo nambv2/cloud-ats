@@ -86,13 +86,17 @@ public class Suite extends AbstractTemplate {
   }
   
   public String transform() throws IOException {
+    return transform(false, 0);
+  }
+  
+  public String transform(boolean showAction, int valueDelay) throws IOException {
     String suite = StringUtil.readStream(Thread.currentThread().getContextClassLoader().getResourceAsStream("suite.java.tmpl"));
     StringBuilder sbCase = new StringBuilder();
     
     BasicDBList list = this.get("cases") != null ? (BasicDBList) this.get("cases") : new BasicDBList();
     for (Object obj : list) {
       CaseReference caze = caseRefFactory.create(((BasicDBObject) obj).getString("_id"));
-      sbCase.append(caze.get().transform());
+      sbCase.append(caze.get().transform(showAction,valueDelay));
     }
     
     RythmEngine engine = new RythmEngine(new MapBuilder<String, Boolean>("codegen.compact", false).build());

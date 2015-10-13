@@ -156,7 +156,8 @@ public class GeneratorService {
    * @return The path to project located
    * @throws IOException
    */
-  public String generateKeyword(String outDir, String jobId, boolean compress, List<SuiteReference> suites) throws IOException {
+  
+  public String generateKeyword(String outDir, String jobId, boolean compress, List<SuiteReference> suites, boolean showAction, int valueDelay) throws IOException{
     File sourceDir = new File(outDir + "/" + jobId  + "/src/test/java/org/ats/generated");
     sourceDir.mkdirs();
     
@@ -169,7 +170,7 @@ public class GeneratorService {
       Suite suite = suiteRef.get();
       String fileName = getAvailableName(StringUtil.normalizeName(suite.getName()), pool) + ".java";
       FileOutputStream os = new FileOutputStream(new File(sourceDir, fileName));
-      os.write(suite.transform().getBytes());
+      os.write(suite.transform(showAction,valueDelay).getBytes());
       os.flush();
       os.close();
     }
@@ -180,6 +181,10 @@ public class GeneratorService {
     }
     
     return outDir + "/" + jobId;
+  }
+  
+  public String generateKeyword(String outDir, String jobId, boolean compress, List<SuiteReference> suites) throws IOException {
+    return generateKeyword(outDir,jobId,compress,suites,false,0);
   }
   
   private void loadKeywordPOM(String outDir) throws IOException {

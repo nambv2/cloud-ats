@@ -96,6 +96,22 @@ public class KeywordProject extends AbstractEntity<KeywordProject> {
     return tenantRefFactory.create(((BasicDBObject)this.get("tenant")).getString("_id"));
   }
   
+  public void setShowAction(boolean status) {
+    this.put("show_action", status);
+  }
+  
+  public void setValueDelay(int value) {
+    this.put("value_delay", value);
+  }
+  
+  public int getValueDelay() {
+    return this.get("value_delay") != null ? this.getInt("value_delay") : 0;
+  }
+  
+  public boolean getShowAction() {
+    return this.get("show_action") != null ? this.getBoolean("show_action") : false;
+  }
+  
   /**
    * To add custom keywords into project. The keyword has same name that will be overridden.
    * @param keywords
