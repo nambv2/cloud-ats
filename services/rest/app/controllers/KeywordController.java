@@ -157,8 +157,12 @@ public class KeywordController extends Controller {
   public Result create() {
     JsonNode json = request().body().asJson();
     String name = json.get("name").asText();
+    boolean showAction = json.get("showAction").asBoolean();
+    int valueDelay = json.get("valueDelay").asInt();
     
     KeywordProject project = keywordProjectFactory.create(context, name);
+    project.setShowAction(showAction);
+    project.setValueDelay(valueDelay);
     keywordProjectService.create(project);
     return status(201, project.getId());
   }
@@ -221,7 +225,7 @@ public class KeywordController extends Controller {
       suites.add(suiteRefFactory.create(sel.asText()));
     }
     
-    KeywordProject project = keywordProjectService.get(projectId);
+    KeywordProject project = keywordProjectService.get(projectId,"show_action","value_delay");
     if (project == null) return status(404);
     
     if (project.getStatus() == KeywordProject.Status.RUNNING) return status(204);
