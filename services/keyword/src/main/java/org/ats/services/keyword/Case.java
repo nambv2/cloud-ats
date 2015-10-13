@@ -10,8 +10,8 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -107,10 +107,21 @@ public class Case extends AbstractTemplate {
   public List<JsonNode> getActions() {
     return Collections.unmodifiableList(actions);
   }
-
+   
   public String transform() throws IOException {
+    return transform(false,0);
+  }
+  
+  public String transform(boolean showAction, int valueDelay) throws IOException {
     StringBuilder sb = new StringBuilder();
     boolean isUseDataProvider = getDataDriven() != null;
+    int valueDelayTransform = valueDelay*1000;
+    
+    String delayTime = "";
+    ObjectMapper mapper = new ObjectMapper(); 
+    JsonNode nodePause = mapper.readTree("{\"type\":\"pause\",\"waitTime\":\""+valueDelayTransform+"\"}");
+    AbstractAction actionPause = actionFactory.createAction(nodePause);
+    delayTime = " Waiting delayTime "+"\\\""+valueDelayTransform+"\\\"s";
     
     if(isUseDataProvider) {
       
@@ -142,12 +153,287 @@ public class Case extends AbstractTemplate {
     
     for (JsonNode json : actions) {
       AbstractAction action = actionFactory.createAction(json);
+      
       if (action == null) continue;
+      
+      //If show action is true, show action in log
+      if (showAction) {
+        
+        String type = json.get("type").asText();
+        String locator = "";
+        String text = "";
+        String url = "";
+        String targetLocator = "";
+        String variable = "";
+        String source = "";
+        String title = "";
+        String attributeName = "";
+        String propertyName = "";
+        String name = "";
+        String options = "";
+        String file = "";
+        String identifier = "";
+        String index = "";
+        String script = "";
+        String value = "";
+        String temp = "";
+        String waitTime = "";
+        JsonNode locatorNode = null;
+        
+        if (json.get("locator") != null) {
+          locatorNode = json.get("locator");
+          temp = locatorNode.get("value").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          locator = " at " +"\\\"" +temp+"\\\"";
+        }
+        
+        if (json.get("text") != null) {
+          temp =  json.get("text").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          text = " value "+ "\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("waitTime") != null) {
+          waitTime = " wait time "+"\\\""+json.get("waitTime").asLong()+"\\\"s";
+        }
+        
+        if (json.get("url") != null) {
+          temp = json.get("url").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          url = " url "+ "\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("targetLocator") != null) {
+          locatorNode = json.get("targetLocator");
+          temp = locatorNode.get("value").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          targetLocator = " to targetLocator "+ "\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("variable") != null) {
+          temp = json.get("variable").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          variable = " with variable "+ "\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("source") != null) {
+          temp = json.get("source").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          source = " source "+"\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("title") != null) {
+          temp = json.get("title").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          title = " title "+"\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("attributeName") != null) {
+          temp = json.get("attributeName").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          attributeName = " attribute name "+ "\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("propertyName") != null) {
+          temp = json.get("propertyName").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          propertyName = " property name " + "\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("options") != null) {
+          temp = json.get("options").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          options = " options "+ "\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("name") != null) {
+          temp = json.get("name").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          name = " name "+"\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("file") != null) {
+          temp = json.get("file").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          file = " file "+"\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("identifier") != null) {
+          temp = json.get("identifier").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          identifier = " identifier "+"\\\""+temp+"\\\"";
+        }
+        
+        if (json.get("index") != null) {
+          index = " index "+"\\\""+json.get("index").asInt()+"\\\"";
+        }
+        
+        if (json.get("script") != null) {
+          temp = json.get("script").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          script = " script "+"\\\""+temp+"\\\"";
+        }
+        
+        if(json.get("value") != null) {
+          temp = json.get("value").asText();
+          if (temp.indexOf("\"") != -1) temp = temp.replace("\"", "\\\"");
+          if(temp.indexOf("${") != -1 && temp.lastIndexOf("}") != -1 ) {
+            int start = temp.indexOf("${");
+            int end = temp.indexOf("}");
+            String subTemp = temp.substring(start + 2, end);
+            StringBuilder sbTemp = new StringBuilder(temp.substring(0, start)).append("\" + ");
+            sbTemp.append(subTemp).append(" + \"").append(temp.substring(end + 1));
+            temp = sbTemp.toString();
+          }
+          value = " value "+"\\\""+temp+"\\\"";
+        }
+        
+        sb.append("    System.out.println(\"\\n\");\n");
+        sb.append("    System.out.println(\"[INFO] Perform ");
+        sb.append(type);
+        sb.append(locator);
+        sb.append(targetLocator);
+        sb.append(url);
+        sb.append(text);
+        sb.append(script);
+        sb.append(name);
+        sb.append(source);
+        sb.append(title);
+        sb.append(options);
+        sb.append(propertyName);
+        sb.append(attributeName);
+        sb.append(variable);
+        sb.append(value);
+        sb.append(file);
+        sb.append(waitTime);
+        sb.append(identifier);
+        sb.append(index);
+        sb.append("\");\n");
+      }
+      
       sb.append("    ");
       sb.append(action.transform());
       sb.append("\n");
+      if(valueDelayTransform != 0) {
+        sb.append("    System.out.println(\"");
+        sb.append(delayTime);
+        sb.append("\");\n");
+        sb.append(actionPause.transform());
+      }
     }
-    
+    sb.append("    System.out.println(\"\\n\");\n");
     sb.append("  }");
     return sb.toString();
   }
