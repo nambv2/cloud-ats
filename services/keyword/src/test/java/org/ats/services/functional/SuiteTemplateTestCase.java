@@ -142,6 +142,22 @@ public class SuiteTemplateTestCase extends AbstractEventTestCase {
     testBase("Jira", "jira.json");
   }
   
+  @Test
+  public void testSwitchToWindowWithOptions() throws Exception {
+    testBaseWithMoreOptions("SwitchToWindowWithOptions", "switchToWindow.json");
+  }
+  
+  @Test
+  public void testJiraWithOptions() throws Exception {
+    testBaseWithMoreOptions("JiraWithOptions", "jira.json");
+  }
+  
+  @Test
+  public void testFullExampleWithOptions() throws Exception {
+    testBaseWithMoreOptions("FullExampleWithOptions", "full_example.json");
+  }
+  
+  
   private void testBase(String testClass, String jsonFile) throws JsonProcessingException, IOException {
 
     ObjectMapper m = new ObjectMapper();
@@ -162,6 +178,37 @@ public class SuiteTemplateTestCase extends AbstractEventTestCase {
     
     try {
       String output = suite.transform();
+      FileWriter writer = new FileWriter(new File("src/test/java/org/ats/generated/" + testClass +".java"));
+      writer.write(output);
+      writer.close();
+      
+      System.out.println(output);
+    } catch (Exception e) {
+      e.printStackTrace();
+      Assert.fail();
+    }
+  }
+  
+  private void testBaseWithMoreOptions(String testClass, String jsonFile) throws JsonProcessingException, IOException {
+
+    ObjectMapper m = new ObjectMapper();
+    JsonNode rootNode = m.readTree(new File("src/test/resources/" + jsonFile));
+    
+    JsonNode stepsNode = rootNode.get("steps");
+
+    List<CaseReference> cases = new ArrayList<CaseReference>();
+    Case caze = caseFactory.create("fake", "test", null);
+    for (JsonNode json : stepsNode) {
+      caze.addAction(json);
+    }
+    caseService.create(caze);
+    
+    cases.add(caseRefFactory.create(caze.getId()));
+    
+    Suite suite = suiteFactory.create("fake", testClass, SuiteFactory.DEFAULT_INIT_DRIVER, cases);
+    
+    try {
+      String output = suite.transform(true,5);
       FileWriter writer = new FileWriter(new File("src/test/java/org/ats/generated/" + testClass +".java"));
       writer.write(output);
       writer.close();

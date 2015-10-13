@@ -13,7 +13,7 @@
         "type": "xpath",
         "value": ".//input[@id='lst-ib']"
       },
-      "text": "username: ${username} / password : ${password}"
+      "text": "${username}"
     },
     {
       "type": "submitElement",

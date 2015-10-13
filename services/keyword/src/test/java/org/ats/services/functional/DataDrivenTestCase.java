@@ -178,4 +178,49 @@ public class DataDrivenTestCase extends AbstractEventTestCase {
       Assert.fail();
     }
   }
+  
+  @Test
+  public void testDataDrivenWithOptions() throws Exception {
+    ObjectMapper m = new ObjectMapper();
+    
+    this.authService.logIn("haint@cloud-ats.net", "12345");
+    this.spaceService.goTo(spaceRefFactory.create(this.space.getId()));
+    
+    DataDriven data = drivenFactory.create("userSource", StringUtil.readStream(new FileInputStream("src/test/resources/data.json")));
+    
+    Assert.assertEquals(data.getCreator().getId(), "haint@cloud-ats.net");
+    Assert.assertEquals(data.getSpace().getId(), this.space.getId());
+    
+    drivenService.create(data);
+    
+    DataDrivenReference dataRef = drivenRefFactory.create(data.getId());
+    
+    JsonNode rootNode = m.readTree(new File("src/test/resources/google.json"));
+    
+    JsonNode stepsNode = rootNode.get("steps");
+    
+    List<CaseReference> cases = new ArrayList<CaseReference>();
+    
+    Case caze = caseFactory.create("fake", "test", dataRef);
+    for (JsonNode json : stepsNode) {
+      caze.addAction(json);
+    }
+    caseService.create(caze);
+    
+    cases.add(caseRefFactory.create(caze.getId()));
+    
+    Suite suite = suiteFactory.create("fake", "GoogleWithOptions", SuiteFactory.DEFAULT_INIT_DRIVER, cases);
+    
+    try {
+      String output = suite.transform(false,3);
+      FileWriter writer = new FileWriter(new File("src/test/java/org/ats/generated/GoogleWithOptions.java"));
+      writer.write(output);
+      writer.close();
+      
+      System.out.println(output);
+    } catch (Exception e) {
+      e.printStackTrace();
+      Assert.fail();
+    }
+  }
 }
